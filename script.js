@@ -50,6 +50,20 @@ cookieOk.addEventListener('click', () => {
 // ---------- Cart ----------
 const WHATSAPP_NUMBER = '79640310106';
 const CART_KEY = 'fosberg_cart';
+const PRICE_BY_SIZE = {
+  '3 кг': 1690,
+  '10 кг': 4590,
+  '15 кг': 6290
+};
+const DEFAULT_PRICE = 1690;
+
+function priceForSize(size){
+  return PRICE_BY_SIZE[size] || DEFAULT_PRICE;
+}
+
+function formatPrice(n){
+  return n.toLocaleString('ru-RU') + ' ₽';
+}
 
 const cartToggle = document.getElementById('cartToggle');
 const cartOverlay = document.getElementById('cartOverlay');
@@ -60,6 +74,7 @@ const cartItemsEl = document.getElementById('cartItems');
 const cartEmptyEl = document.getElementById('cartEmpty');
 const cartFootEl = document.getElementById('cartFoot');
 const cartCountEl = document.getElementById('cartCount');
+const cartSumEl = document.getElementById('cartSum');
 const cartClearBtn = document.getElementById('cartClear');
 const orderWhatsappLink = document.getElementById('orderWhatsapp');
 const orderTelegramLink = document.getElementById('orderTelegram');
@@ -81,6 +96,10 @@ function totalCount(){
   return cart.reduce((sum, item) => sum + item.qty, 0);
 }
 
+function totalSum(){
+  return cart.reduce((sum, item) => sum + item.qty * (item.price || DEFAULT_PRICE), 0);
+}
+
 function renderCart(){
   cartItemsEl.innerHTML = '';
   if(cart.length === 0){
@@ -96,6 +115,7 @@ function renderCart(){
         <div class="cart-item__info">
           <div class="cart-item__name">${item.name}</div>
           <div class="cart-item__size">${item.size}</div>
+          <div class="cart-item__price">${formatPrice((item.price || DEFAULT_PRICE) * item.qty)}</div>
           <div class="cart-item__qty">
             <button type="button" data-action="dec" aria-label="Уменьшить">&minus;</button>
             <span>${item.qty}</span>
@@ -112,6 +132,7 @@ function renderCart(){
   }
   const count = totalCount();
   cartCountEl.textContent = count;
+  cartSumEl.textContent = formatPrice(totalSum());
   if(count > 0){
     cartBadge.hidden = false;
     cartBadge.textContent = count;
@@ -136,12 +157,12 @@ function removeItem(index){
   renderCart();
 }
 
-function addToCart(name, size){
+function addToCart(name, size, price){
   const existing = cart.find(item => item.name === name && item.size === size);
   if(existing){
     existing.qty += 1;
   } else {
-    cart.push({name, size, qty: 1});
+    cart.push({name, size, price, qty: 1});
   }
   saveCart();
   renderCart();
@@ -149,8 +170,8 @@ function addToCart(name, size){
 }
 
 function buildOrderText(){
-  const lines = cart.map((item, i) => `${i + 1}. ${item.name} — ${item.size} — ${item.qty} шт.`);
-  return `Здравствуйте! Хочу заказать:\n${lines.join('\n')}\n\nИтого товаров: ${totalCount()}`;
+  const lines = cart.map((item, i) => `${i + 1}. ${item.name} — ${item.size} — ${item.qty} шт. — ${formatPrice((item.price || DEFAULT_PRICE) * item.qty)}`);
+  return `Здравствуйте! Хочу заказать:\n${lines.join('\n')}\n\nИтого товаров: ${totalCount()}\nИтого к оплате: ${formatPrice(totalSum())}`;
 }
 
 function updateOrderLinks(){
@@ -179,13 +200,26 @@ cartClearBtn.addEventListener('click', () => {
   renderCart();
 });
 
+function updateCardPrice(select){
+  const card = select.closest('.pcard');
+  const amountEl = card.querySelector('.pcard__price-amount');
+  if(amountEl){
+    amountEl.textContent = formatPrice(priceForSize(select.value));
+  }
+}
+
+document.querySelectorAll('.pcard__size').forEach(select => {
+  updateCardPrice(select);
+  select.addEventListener('change', () => updateCardPrice(select));
+});
+
 document.querySelectorAll('.pcard__order').forEach(btn => {
   btn.addEventListener('click', () => {
     const card = btn.closest('.pcard');
     const name = card.querySelector('h3').textContent.trim();
     const sizeSelect = card.querySelector('.pcard__size');
     const size = sizeSelect ? sizeSelect.value : '';
-    addToCart(name, size);
+    addToCart(name, size, priceForSize(size));
   });
 });
 
