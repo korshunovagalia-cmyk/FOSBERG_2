@@ -46,3 +46,155 @@ cookieOk.addEventListener('click', () => {
   cookie.classList.remove('is-visible');
   try { localStorage.setItem('fosberg_cookie_ok', '1'); } catch(e){}
 });
+
+// ---------- Cart ----------
+const WHATSAPP_NUMBER = '79640310106';
+const CART_KEY = 'fosberg_cart';
+
+const cartToggle = document.getElementById('cartToggle');
+const cartOverlay = document.getElementById('cartOverlay');
+const cartDrawer = document.getElementById('cartDrawer');
+const cartClose = document.getElementById('cartClose');
+const cartBadge = document.getElementById('cartBadge');
+const cartItemsEl = document.getElementById('cartItems');
+const cartEmptyEl = document.getElementById('cartEmpty');
+const cartFootEl = document.getElementById('cartFoot');
+const cartCountEl = document.getElementById('cartCount');
+const cartClearBtn = document.getElementById('cartClear');
+const orderWhatsappLink = document.getElementById('orderWhatsapp');
+const orderTelegramLink = document.getElementById('orderTelegram');
+const toastEl = document.getElementById('toast');
+
+function loadCart(){
+  try {
+    const raw = localStorage.getItem(CART_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch(e){ return []; }
+}
+function saveCart(){
+  try { localStorage.setItem(CART_KEY, JSON.stringify(cart)); } catch(e){}
+}
+
+let cart = loadCart();
+
+function totalCount(){
+  return cart.reduce((sum, item) => sum + item.qty, 0);
+}
+
+function renderCart(){
+  cartItemsEl.innerHTML = '';
+  if(cart.length === 0){
+    cartEmptyEl.hidden = false;
+    cartFootEl.hidden = true;
+  } else {
+    cartEmptyEl.hidden = true;
+    cartFootEl.hidden = false;
+    cart.forEach((item, index) => {
+      const row = document.createElement('div');
+      row.className = 'cart-item';
+      row.innerHTML = `
+        <div class="cart-item__info">
+          <div class="cart-item__name">${item.name}</div>
+          <div class="cart-item__size">${item.size}</div>
+          <div class="cart-item__qty">
+            <button type="button" data-action="dec" aria-label="Уменьшить">&minus;</button>
+            <span>${item.qty}</span>
+            <button type="button" data-action="inc" aria-label="Увеличить">+</button>
+          </div>
+        </div>
+        <button class="cart-item__remove" type="button" data-action="remove" aria-label="Удалить">&times;</button>
+      `;
+      row.querySelector('[data-action="dec"]').addEventListener('click', () => changeQty(index, -1));
+      row.querySelector('[data-action="inc"]').addEventListener('click', () => changeQty(index, 1));
+      row.querySelector('[data-action="remove"]').addEventListener('click', () => removeItem(index));
+      cartItemsEl.appendChild(row);
+    });
+  }
+  const count = totalCount();
+  cartCountEl.textContent = count;
+  if(count > 0){
+    cartBadge.hidden = false;
+    cartBadge.textContent = count;
+  } else {
+    cartBadge.hidden = true;
+  }
+  updateOrderLinks();
+}
+
+function changeQty(index, delta){
+  cart[index].qty += delta;
+  if(cart[index].qty <= 0){
+    cart.splice(index, 1);
+  }
+  saveCart();
+  renderCart();
+}
+
+function removeItem(index){
+  cart.splice(index, 1);
+  saveCart();
+  renderCart();
+}
+
+function addToCart(name, size){
+  const existing = cart.find(item => item.name === name && item.size === size);
+  if(existing){
+    existing.qty += 1;
+  } else {
+    cart.push({name, size, qty: 1});
+  }
+  saveCart();
+  renderCart();
+  showToast(`Добавлено в корзину: ${name}, ${size}`);
+}
+
+function buildOrderText(){
+  const lines = cart.map((item, i) => `${i + 1}. ${item.name} — ${item.size} — ${item.qty} шт.`);
+  return `Здравствуйте! Хочу заказать:\n${lines.join('\n')}\n\nИтого товаров: ${totalCount()}`;
+}
+
+function updateOrderLinks(){
+  const text = encodeURIComponent(buildOrderText());
+  orderWhatsappLink.href = `https://wa.me/${WHATSAPP_NUMBER}?text=${text}`;
+  orderTelegramLink.href = `https://t.me/share/url?url=&text=${text}`;
+}
+
+function openCart(){
+  cartDrawer.classList.add('is-open');
+  cartOverlay.classList.add('is-open');
+  cartDrawer.setAttribute('aria-hidden', 'false');
+}
+function closeCart(){
+  cartDrawer.classList.remove('is-open');
+  cartOverlay.classList.remove('is-open');
+  cartDrawer.setAttribute('aria-hidden', 'true');
+}
+
+cartToggle.addEventListener('click', openCart);
+cartClose.addEventListener('click', closeCart);
+cartOverlay.addEventListener('click', closeCart);
+cartClearBtn.addEventListener('click', () => {
+  cart = [];
+  saveCart();
+  renderCart();
+});
+
+document.querySelectorAll('.pcard__order').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const card = btn.closest('.pcard');
+    const name = card.querySelector('h3').textContent.trim();
+    const sizeSelect = card.querySelector('.pcard__size');
+    const size = sizeSelect ? sizeSelect.value : '';
+    addToCart(name, size);
+  });
+});
+
+let toastTimer;
+function showToast(message){
+  toastEl.textContent = message;
+  toastEl.classList.add('is-visible');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toastEl.classList.remove('is-visible'), 2600);
+}
+
+renderCart();

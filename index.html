@@ -24,6 +24,10 @@
       <a href="#articles">Статьи</a>
       <a href="#contacts">Контакты</a>
     </nav>
+    <button class="nav__cart" id="cartToggle" aria-label="Корзина" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h2l2.4 12.4a2 2 0 0 0 2 1.6h8.2a2 2 0 0 0 2-1.6L21 8H6"/><circle cx="9" cy="21" r="1"/><circle cx="18" cy="21" r="1"/></svg>
+      <span class="nav__cart-badge" id="cartBadge" hidden>0</span>
+    </button>
     <a href="#contacts" class="btn btn--nav">Связаться</a>
     <button class="nav__burger" id="burger" aria-label="Меню">
       <span></span><span></span><span></span>
@@ -36,6 +40,31 @@
     <a href="#contacts">Контакты</a>
   </div>
 </header>
+
+<!-- CART DRAWER -->
+<div class="cart-overlay" id="cartOverlay"></div>
+<aside class="cart-drawer" id="cartDrawer" aria-hidden="true">
+  <div class="cart-drawer__head">
+    <h3>Корзина</h3>
+    <button class="cart-drawer__close" id="cartClose" aria-label="Закрыть корзину">&times;</button>
+  </div>
+  <div class="cart-drawer__body" id="cartBody">
+    <p class="cart-drawer__empty" id="cartEmpty">Ваша корзина пуста</p>
+    <div class="cart-drawer__items" id="cartItems"></div>
+  </div>
+  <div class="cart-drawer__foot" id="cartFoot" hidden>
+    <div class="cart-drawer__total">
+      <span>Товаров в заказе</span>
+      <strong id="cartCount">0</strong>
+    </div>
+    <a href="#" class="btn btn--light" id="orderWhatsapp" target="_blank" rel="noopener">Оформить заказ в WhatsApp</a>
+    <a href="#" class="btn btn--outline" id="orderTelegram" target="_blank" rel="noopener">Отправить в Telegram</a>
+    <button class="cart-drawer__clear" id="cartClear" type="button">Очистить корзину</button>
+  </div>
+</aside>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
 
 <!-- HERO -->
 <section class="hero" id="top">
@@ -207,7 +236,11 @@
         <h3>Для собак мелких пород</h3>
         <p>Сбалансированный рацион для поддержания активности, здоровья кожи и шерсти.</p>
         <div class="pcard__footer">
-          <p class="pcard__sizes">3 кг · 10 кг · 15 кг</p>
+          <select class="pcard__size" aria-label="Вес упаковки">
+            <option value="3 кг">3 кг</option>
+            <option value="10 кг">10 кг</option>
+            <option value="15 кг">15 кг</option>
+          </select>
           <button class="pcard__order" type="button">Заказать</button>
         </div>
       </div>
@@ -217,7 +250,11 @@
         <h3>Для собак средних пород</h3>
         <p>Сбалансированный рацион для поддержания активности, здоровья кожи и шерсти.</p>
         <div class="pcard__footer">
-          <p class="pcard__sizes">3 кг · 10 кг · 15 кг</p>
+          <select class="pcard__size" aria-label="Вес упаковки">
+            <option value="3 кг">3 кг</option>
+            <option value="10 кг">10 кг</option>
+            <option value="15 кг">15 кг</option>
+          </select>
           <button class="pcard__order" type="button">Заказать</button>
         </div>
       </div>
@@ -227,7 +264,11 @@
         <h3>Для собак крупных пород</h3>
         <p>Сбалансированный рацион для поддержания активности, здоровья кожи и шерсти.</p>
         <div class="pcard__footer">
-          <p class="pcard__sizes">3 кг · 10 кг · 15 кг</p>
+          <select class="pcard__size" aria-label="Вес упаковки">
+            <option value="3 кг">3 кг</option>
+            <option value="10 кг">10 кг</option>
+            <option value="15 кг">15 кг</option>
+          </select>
           <button class="pcard__order" type="button">Заказать</button>
         </div>
       </div>
@@ -237,7 +278,11 @@
         <h3>Для щенков мелких пород</h3>
         <p>Питание для правильного роста и развития — источник витаминов и минералов.</p>
         <div class="pcard__footer">
-          <p class="pcard__sizes">3 кг · 10 кг · 15 кг</p>
+          <select class="pcard__size" aria-label="Вес упаковки">
+            <option value="3 кг">3 кг</option>
+            <option value="10 кг">10 кг</option>
+            <option value="15 кг">15 кг</option>
+          </select>
           <button class="pcard__order" type="button">Заказать</button>
         </div>
       </div>
@@ -247,7 +292,11 @@
         <h3>Для щенков средних пород</h3>
         <p>Питание для правильного роста и развития — источник витаминов и минералов.</p>
         <div class="pcard__footer">
-          <p class="pcard__sizes">3 кг · 10 кг · 15 кг</p>
+          <select class="pcard__size" aria-label="Вес упаковки">
+            <option value="3 кг">3 кг</option>
+            <option value="10 кг">10 кг</option>
+            <option value="15 кг">15 кг</option>
+          </select>
           <button class="pcard__order" type="button">Заказать</button>
         </div>
       </div>
@@ -257,7 +306,11 @@
         <h3>Для щенков крупных пород</h3>
         <p>Питание для правильного роста и развития — источник витаминов и минералов.</p>
         <div class="pcard__footer">
-          <p class="pcard__sizes">3 кг · 10 кг · 15 кг</p>
+          <select class="pcard__size" aria-label="Вес упаковки">
+            <option value="3 кг">3 кг</option>
+            <option value="10 кг">10 кг</option>
+            <option value="15 кг">15 кг</option>
+          </select>
           <button class="pcard__order" type="button">Заказать</button>
         </div>
       </div>
@@ -267,7 +320,9 @@
         <h3>Для кошек</h3>
         <p>Полноценный рацион с натуральными ингредиентами для здоровья и жизнерадостности.</p>
         <div class="pcard__footer">
-          <p class="pcard__sizes">3 кг</p>
+          <select class="pcard__size" aria-label="Вес упаковки">
+            <option value="3 кг">3 кг</option>
+          </select>
           <button class="pcard__order" type="button">Заказать</button>
         </div>
       </div>
